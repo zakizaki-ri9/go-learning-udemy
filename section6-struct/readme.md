@@ -1,7 +1,7 @@
 
 このセクションで作成したソースでやっていることを記載する。
 
-# [01-pointer.go](./01-pointer.go)
+# [sample.go](./sample.go)
 
 ## structにmethodを定義する 
 
