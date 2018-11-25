@@ -21,9 +21,15 @@ func Area(v Vertex) int {
 	return v.X * v.Y
 }
 
+func New(x, y int) *Vertex {
+	return &Vertex{x, y}
+}
+
 func main() {
-	v := Vertex{3, 4}
-	fmt.Println(Area(v))
+	//v := Vertex{3, 4}
+	v := New(3, 4)
+	//fmt.Println(Area(v))
+	fmt.Println(Area(*v))
 	v.Scale(10)
 	fmt.Println(v.Area())
 }
