@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"section8/mylib"
+	"github.com/zakizaki-ri9/go-learning/section8/mylib"
 )
 
 func main() {
