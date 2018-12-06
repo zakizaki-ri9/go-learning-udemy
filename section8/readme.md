@@ -18,3 +18,13 @@ go test ./...
 # カバレッジつき
 go test -v ./...
 ```
+
+# godocの表示
+
+```bash
+godoc -http=:6060
+```
+
+で起動。  
+
+`http://localhost:6060`でアクセス可能。  
