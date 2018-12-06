@@ -3,7 +3,7 @@ package mylib
 import "fmt"
 
 var Public string = "Public"
-var Private string = "Private"
+var private string = "Private"
 
 type Person struct {
 	Name string
