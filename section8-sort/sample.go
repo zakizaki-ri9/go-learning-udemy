@@ -12,10 +12,10 @@ func main() {
 		Name string
 		Age  int
 	}{
-		{"ZZZ", 5},
+		{"ZZZ", 30},
+		{"OOO", 40},
 		{"NNN", 10},
 		{"AAA", 20},
-		{"OOO", 30},
 	}
 
 	// ソート前
@@ -28,6 +28,12 @@ func main() {
 		p,
 		func(i, j int) bool {
 			return p[i].Name < p[j].Name
+		},
+	)
+	sort.Slice(
+		p,
+		func(i, j int) bool {
+			return p[i].Age < p[j].Age
 		},
 	)
 
