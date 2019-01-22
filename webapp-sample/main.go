@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"regexp"
 )
 
 type Page struct {
@@ -27,14 +28,21 @@ func loadPage(title string) (*Page, error) {
 	return &Page{Title: title, Body: body}, nil
 }
 
+// 事前にキャッシュしておく
+var templates = template.Must(template.ParseFiles("edit.html", "view.html"))
+
 // テンプレートでPageの情報をHTMLへ出力
 func renderTemplate(w http.ResponseWriter, tmpl string, p *Page) {
-	t, _ := template.ParseFiles(tmpl + ".html")
-	t.Execute(w, p)
+	// t, _ := template.ParseFiles(tmpl + ".html")
+	// t.Execute(w, p)
+	err := templates.ExecuteTemplate(w, tmpl+".html", p)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
-func viewHandler(w http.ResponseWriter, r *http.Request) {
-	title := r.URL.Path[len("/view/"):]
+func viewHandler(w http.ResponseWriter, r *http.Request, title string) {
+	// title := r.URL.Path[len("/view/"):]
 	p, err := loadPage(title)
 	if err != nil {
 		// {.Title}.txtがなかったらedit画面にリダイレクト
@@ -44,8 +52,8 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 	renderTemplate(w, "view", p)
 }
 
-func editHandler(w http.ResponseWriter, r *http.Request) {
-	title := r.URL.Path[len("/edit/"):]
+func editHandler(w http.ResponseWriter, r *http.Request, title string) {
+	// title := r.URL.Path[len("/edit/"):]
 	p, err := loadPage(title)
 	if err != nil {
 		p = &Page{Title: title}
@@ -53,8 +61,8 @@ func editHandler(w http.ResponseWriter, r *http.Request) {
 	renderTemplate(w, "edit", p)
 }
 
-func saveHandler(w http.ResponseWriter, r *http.Request) {
-	title := r.URL.Path[len("/save/"):]
+func saveHandler(w http.ResponseWriter, r *http.Request, title string) {
+	// title := r.URL.Path[len("/save/"):]
 	body := r.FormValue("body")
 	p := &Page{Title: title, Body: []byte(body)}
 	err := p.save()
@@ -65,11 +73,27 @@ func saveHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/view/"+title, http.StatusFound)
 }
 
+// URLチェック用の正規表現
+var validPath = regexp.MustCompile("^/(edit|save|view)/([a-zA-Z0-9]+)$")
+
+func makeHandler(fn func(http.ResponseWriter, *http.Request, string)) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		m := validPath.FindStringSubmatch(r.URL.Path)
+		log.Println(m)
+		if m == nil {
+			http.NotFound(w, r)
+			return
+		}
+		// URLからタイトル部分を切り出し設定
+		fn(w, r, m[2])
+	}
+}
+
 func main() {
 	// ハンドラーの設定
-	http.HandleFunc("/view/", viewHandler)
-	http.HandleFunc("/edit/", editHandler)
-	http.HandleFunc("/save/", saveHandler)
+	http.HandleFunc("/view/", makeHandler(viewHandler))
+	http.HandleFunc("/edit/", makeHandler(editHandler))
+	http.HandleFunc("/save/", makeHandler(saveHandler))
 
 	// 受信待ち状態
 	//  前処理で定義したパスに合致しない場合は終了する
